@@ -120,13 +120,13 @@ namespace HappyPointSounds.Forms
 				root.Add(LoginSettings);
 				doc.Add(root);
 				doc.Save(_xmlFileLocation);
-
-				this.DialogResult = DialogResult.OK;
 			}
 			catch (UnauthorizedAccessException ex)
 			{
 				MessageBox.Show("Excuse the interruption but the program saves it's config in your Documents folder. The program has no access to that and will be unable to save. A pop-up should notify that there has been \"[...] unauthorized access\".\r\nYou can still connect, but it will not save.", "Oopsie", MessageBoxButtons.OK);
 			}
+
+			this.DialogResult = DialogResult.OK;
 		}
 
 		private void ConnectWithAPIButton_Click(object sender, EventArgs e)
