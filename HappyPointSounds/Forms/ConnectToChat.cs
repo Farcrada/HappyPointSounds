@@ -64,62 +64,69 @@ namespace HappyPointSounds.Forms
 
 		private void ConnectButton_Click(object sender, EventArgs e)
 		{
-			XDocument doc = new XDocument();
-			XElement root = null;
-			XElement LoginSettings = new XElement("LoginSettings");
-
-			// To make sure we don't remove any other settings
-			// we'll need to copy the entire file into memory
-			// and then replace what we update.
 			try
 			{
-				// Load XML
-				doc = XDocument.Load(_xmlFileLocation);
-				// Locally store user settings.
-				root = doc.Element("CurrentUser");
-				// Remove the LoginSettings since we will be replacing it.
-				root.Element("LoginSettings").Remove();
+				XDocument doc = new XDocument();
+				XElement root = null;
+				XElement LoginSettings = new XElement("LoginSettings");
 
-				// Clear document variable so we know it's empty and clean
-				doc = new XDocument();
-			}
-			// If all that fails we know it's all null, clean and new.
-			catch (Exception) { root = new XElement("CurrentUser"); }
+				// To make sure we don't remove any other settings
+				// we'll need to copy the entire file into memory
+				// and then replace what we update.
+				try
+				{
+					// Load XML
+					doc = XDocument.Load(_xmlFileLocation);
+					// Locally store user settings.
+					root = doc.Element("CurrentUser");
+					// Remove the LoginSettings since we will be replacing it.
+					root.Element("LoginSettings").Remove();
+
+					// Clear document variable so we know it's empty and clean
+					doc = new XDocument();
+				}
+				// If all that fails we know it's all null, clean and new.
+				catch (Exception) { root = new XElement("CurrentUser"); }
 
 
-			/// This was for IRC connections only.
-			/// Currently serves no purpose for us because
-			/// everything channelpoints-related goes through PubSub.
-			/// 
-			/// And yet it seems there is still a use for this.
+				/// This was for IRC connections only.
+				/// Currently serves no purpose for us because
+				/// everything channelpoints-related goes through PubSub.
+				/// 
+				/// And yet it seems there is still a use for this.
 
-			if (UsernameTextBox.Text.Length < 3)
-			{
-				MessageBox.Show("Please enter a valid name in the username field and try again.");
-				if (OAuthTextBox.Text.Length < 7)
-					MessageBox.Show("Please enter a valid OAuth in the field and try again.");
+				if (UsernameTextBox.Text.Length < 3)
+				{
+					MessageBox.Show("Please enter a valid name in the username field and try again.");
+					if (OAuthTextBox.Text.Length < 7)
+						MessageBox.Show("Please enter a valid OAuth in the field and try again.");
+					else
+					{ }
+				}
 				else
 				{ }
+
+				LoginDetails[0] = UsernameTextBox.Text;
+				LoginDetails[1] = OAuthTextBox.Text.ToLower().Replace("oauth:", "");
+				LoginDetails[2] = _authCode;
+
+				LoginSettings.Add(new XElement("Username", LoginDetails[0]));
+				LoginSettings.Add(new XElement("OAuth", LoginDetails[1]));
+				LoginSettings.Add(new XElement("API", LoginDetails[2]));
+
+				LoginSettings.Add(new XElement("Server", "irc.twitch.tv"));
+				LoginSettings.Add(new XElement("Port", "6667"));
+
+				root.Add(LoginSettings);
+				doc.Add(root);
+				doc.Save(_xmlFileLocation);
+
+				this.DialogResult = DialogResult.OK;
 			}
-			else
-			{ }
-
-			LoginDetails[0] = UsernameTextBox.Text;
-			LoginDetails[1] = OAuthTextBox.Text.ToLower().Replace("oauth:", "");
-			LoginDetails[2] = _authCode;
-
-			LoginSettings.Add(new XElement("Username", LoginDetails[0]));
-			LoginSettings.Add(new XElement("OAuth", LoginDetails[1]));
-			LoginSettings.Add(new XElement("API", LoginDetails[2]));
-
-			LoginSettings.Add(new XElement("Server", "irc.twitch.tv"));
-			LoginSettings.Add(new XElement("Port", "6667"));
-
-			root.Add(LoginSettings);
-			doc.Add(root);
-			doc.Save(_xmlFileLocation);
-
-			this.DialogResult = DialogResult.OK;
+			catch (UnauthorizedAccessException ex)
+			{
+				MessageBox.Show("Excuse the interruption but the program saves it's config in your Documents folder. The program has no access to that and will be unable to save. A pop-up should notify that there has been \"[...] unauthorized access\"./r/n/You can still connect, but it will not save.", "Oopsie", MessageBoxButtons.OK);
+			}
 		}
 
 		private void ConnectWithAPIButton_Click(object sender, EventArgs e)
